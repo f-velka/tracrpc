@@ -22,8 +22,13 @@ func NewClient(url string, transport http.RoundTripper) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	wiki, err := NewWikiService(xmlrpcClient)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
 		rpc:  xmlrpcClient,
-		Wiki: NewWikiService(xmlrpcClient),
+		Wiki: wiki,
 	}, nil
 }

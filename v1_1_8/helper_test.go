@@ -6,6 +6,21 @@ import (
 	"net/http"
 )
 
+func PStr(str string) *string {
+	return &str
+}
+
+func PInt(i int) *int {
+	return &i
+}
+
+type RpcClientMock struct {
+}
+
+func (c *RpcClientMock) Call(methodName string, args interface{}, reply interface{}) error {
+	return nil
+}
+
 type RoundTripFunc func(req *http.Request) *http.Response
 
 func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
