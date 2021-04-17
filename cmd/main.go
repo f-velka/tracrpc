@@ -25,19 +25,37 @@ func main() {
 	for _, r := range res1 {
 		fmt.Println(r)
 	}
-	// res1, err := client.Wiki.GetAllPages()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// for _, r := range res1 {
-	// 	fmt.Println(r)
-	// }
-	// v := 1
-	// res, err := client.Wiki.GetPage(&v1_1_8.GetPageOptions{
-	// 	Version: &v,
-	// })
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Print(res)
+
+	pn := "WikiStart"
+	res2, err := client.Wiki.GetPage(&v1_1_8.PageOptions{PageName: &pn})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Print(res2)
+
+	res3, err := client.Wiki.GetAllPages()
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, r := range res3 {
+		fmt.Println(r)
+	}
+
+	res4, err := client.Wiki.GetPageInfo(&v1_1_8.PageOptions{PageName: &pn})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(res4)
+
+	res5, err := client.Wiki.GetPageInfoVersion(&v1_1_8.PageOptions{PageName: &pn})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(res5)
+
+	res6, err := client.Wiki.PutPage()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(res6)
 }

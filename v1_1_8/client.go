@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/f-velka/go-trac-rpc/common"
 	"github.com/kolo/xmlrpc"
 )
 
@@ -13,7 +12,6 @@ const (
 )
 
 type Client struct {
-	rpc  common.RpcClient
 	Wiki *WikiService
 }
 
@@ -28,7 +26,6 @@ func NewClient(url string, transport http.RoundTripper) (*Client, error) {
 	}
 
 	return &Client{
-		rpc:  xmlrpcClient,
 		Wiki: wiki,
 	}, nil
 }

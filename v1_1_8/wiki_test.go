@@ -42,7 +42,7 @@ func TestNewWikiService(t *testing.T) {
 func TestGetRecentChanges(t *testing.T) {
 	test := struct {
 		reply    string
-		expected []GetRecentChangesResult
+		expected []PageInfo
 	}{
 		`<?xml version='1.0'?>
 <methodResponse>
@@ -52,7 +52,7 @@ func TestGetRecentChanges(t *testing.T) {
 <value><struct>
 <member>
 <name>comment</name>
-<value><string>comment1</string></value>
+<value><string>ouch</string></value>
 </member>
 <member>
 <name>lastModified</name>
@@ -64,21 +64,21 @@ func TestGetRecentChanges(t *testing.T) {
 </member>
 <member>
 <name>name</name>
-<value><string>name1</string></value>
+<value><string>sakuradamon</string></value>
 </member>
 <member>
 <name>author</name>
-<value><string>author1</string></value>
+<value><string>n_ii</string></value>
 </member>
 </struct></value>
 <value><struct>
 <member>
 <name>comment</name>
-<value><string>comment2</string></value>
+<value><string>nobu</string></value>
 </member>
 <member>
 <name>lastModified</name>
-<value><dateTime.iso8601>19360226T00:00:00</dateTime.iso8601></value>
+<value><dateTime.iso8601>18671109T00:00:00</dateTime.iso8601></value>
 </member>
 <member>
 <name>version</name>
@@ -86,36 +86,36 @@ func TestGetRecentChanges(t *testing.T) {
 </member>
 <member>
 <name>name</name>
-<value><string>name2</string></value>
+<value><string>edo</string></value>
 </member>
 <member>
 <name>author</name>
-<value><string>author2</string></value>
+<value><string>yoshi</string></value>
 </member>
 </struct></value>
 </data></array></value>
 </param>
 </params>
 </methodResponse>`,
-		[]GetRecentChangesResult{
+		[]PageInfo{
 			{
-				Name:         "name1",
+				Name:         "sakuradamon",
 				LastModified: time.Date(1860, time.March, 24, 0, 0, 0, 0, time.UTC),
-				Author:       "author1",
+				Author:       "n_ii",
 				Version:      1,
-				Comment:      "comment1",
+				Comment:      "ouch",
 			},
 			{
-				Name:         "name2",
-				LastModified: time.Date(1936, time.February, 26, 0, 0, 0, 0, time.UTC),
-				Author:       "author2",
+				Name:         "edo",
+				LastModified: time.Date(1867, time.November, 9, 0, 0, 0, 0, time.UTC),
+				Author:       "yoshi",
 				Version:      2,
-				Comment:      "comment2",
+				Comment:      "nobu",
 			},
 		},
 	}
 
-	c := NewTestClient(test.reply)
+	c := NewTestClient(wiki_get_recent_changes, test.reply)
 	res, err := c.Wiki.GetRecentChanges(time.Now())
 	if err != nil {
 		t.Fatal(err)
@@ -141,7 +141,7 @@ func TestGetRPCVersionSupported(t *testing.T) {
 		2,
 	}
 
-	c := NewTestClient(test.reply)
+	c := NewTestClient(wiki_get_rpc_version_supported, test.reply)
 	res, err := c.Wiki.GetRPCVersionSupported()
 	if err != nil {
 		t.Fatal(err)
@@ -154,13 +154,11 @@ func TestGetRPCVersionSupported(t *testing.T) {
 func TestGetPage(t *testing.T) {
 
 	test := struct {
-		name     string
-		options  GetPageOptions
+		options  PageOptions
 		reply    string
 		expected string
 	}{
-		"OK",
-		GetPageOptions{
+		PageOptions{
 			PageName: PStr("Shiga"),
 			Version:  PInt(1),
 		},
@@ -176,7 +174,7 @@ func TestGetPage(t *testing.T) {
 		"Shiga",
 	}
 
-	c := NewTestClient(test.reply)
+	c := NewTestClient(wiki_get_page, test.reply)
 	res, err := c.Wiki.GetPage(&test.options)
 	if err != nil {
 		t.Fatal(err)
@@ -187,31 +185,28 @@ func TestGetPage(t *testing.T) {
 }
 
 func TestGetPageVersion(t *testing.T) {
-
 	test := struct {
-		name     string
-		options  GetPageOptions
+		options  PageOptions
 		reply    string
 		expected string
 	}{
-		"OK",
-		GetPageOptions{
-			PageName: PStr("近江"),
+		PageOptions{
+			PageName: PStr("Shiga"),
 			Version:  PInt(1),
 		},
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
 <param>
-<value><string>近江</string></value>
+<value><string>Shiga</string></value>
 </param>
 </params>
 </methodResponse>`,
 
-		"近江",
+		"Shiga",
 	}
 
-	c := NewTestClient(test.reply)
+	c := NewTestClient(wiki_get_page_version, test.reply)
 	res, err := c.Wiki.GetPageVersion(&test.options)
 	if err != nil {
 		t.Fatal(err)
@@ -223,13 +218,11 @@ func TestGetPageVersion(t *testing.T) {
 
 func TestGetPageHtml(t *testing.T) {
 	test := struct {
-		name     string
-		options  GetPageOptions
+		options  PageOptions
 		reply    string
 		expected string
 	}{
-		"OK",
-		GetPageOptions{
+		PageOptions{
 			PageName: PStr("this is a test page."),
 			Version:  PInt(1),
 		},
@@ -245,7 +238,7 @@ func TestGetPageHtml(t *testing.T) {
 		"this is a test page.",
 	}
 
-	c := NewTestClient(test.reply)
+	c := NewTestClient(wiki_get_page_html, test.reply)
 	res, err := c.Wiki.GetPageHTML(&test.options)
 	if err != nil {
 		t.Fatal(err)
@@ -257,13 +250,11 @@ func TestGetPageHtml(t *testing.T) {
 
 func TestGetPageHtmlVersion(t *testing.T) {
 	test := struct {
-		name     string
-		options  GetPageOptions
+		options  PageOptions
 		reply    string
 		expected string
 	}{
-		"OK",
-		GetPageOptions{
+		PageOptions{
 			PageName: PStr("this is a test page."),
 			Version:  PInt(1),
 		},
@@ -279,7 +270,7 @@ func TestGetPageHtmlVersion(t *testing.T) {
 		"this is a test page.",
 	}
 
-	c := NewTestClient(test.reply)
+	c := NewTestClient(wiki_get_page_html_version, test.reply)
 	res, err := c.Wiki.GetPageHTMLVersion(&test.options)
 	if err != nil {
 		t.Fatal(err)
@@ -308,7 +299,7 @@ func TestGetAllPages(t *testing.T) {
 		[]string{"Biwako", "Kasumigaura"},
 	}
 
-	c := NewTestClient(test.reply)
+	c := NewTestClient(wiki_get_all_pages, test.reply)
 	res, err := c.Wiki.GetAllPages()
 	if err != nil {
 		t.Fatal(err)
@@ -319,15 +310,130 @@ func TestGetAllPages(t *testing.T) {
 }
 
 func TestGetPageInfo(t *testing.T) {
-	t.FailNow()
+	test := struct {
+		options  PageOptions
+		reply    string
+		expected PageInfo
+	}{
+		PageOptions{
+			PageName: PStr("sakuradamon"),
+			Version:  PInt(1),
+		},
+		`<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><struct>
+<member>
+<name>comment</name>
+<value><string>ouch</string></value>
+</member>
+<member>
+<name>lastModified</name>
+<value><dateTime.iso8601>18600324T00:00:00</dateTime.iso8601></value>
+</member>
+<member>
+<name>version</name>
+<value><int>1</int></value>
+</member>
+<member>
+<name>name</name>
+<value><string>sakuradamon</string></value>
+</member>
+<member>
+<name>author</name>
+<value><string>n_ii</string></value>
+</member>
+</struct></value>
+</param>
+</params>
+</methodResponse>`,
+		PageInfo{
+			Name:         "sakuradamon",
+			LastModified: time.Date(1860, time.March, 24, 0, 0, 0, 0, time.UTC),
+			Author:       "n_ii",
+			Version:      1,
+			Comment:      "ouch",
+		},
+	}
+	c := NewTestClient(wiki_get_page_info, test.reply)
+	res, err := c.Wiki.GetPageInfo(&test.options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res != test.expected {
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
+	}
 }
 
 func TestGetPageInfoVersion(t *testing.T) {
-	t.FailNow()
+	test := struct {
+		options  PageOptions
+		reply    string
+		expected PageInfo
+	}{
+		PageOptions{
+			PageName: PStr("sakuradamon"),
+			Version:  PInt(1),
+		},
+		`<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><struct>
+<member>
+<name>comment</name>
+<value><string>ouch</string></value>
+</member>
+<member>
+<name>lastModified</name>
+<value><dateTime.iso8601>18600324T00:00:00</dateTime.iso8601></value>
+</member>
+<member>
+<name>version</name>
+<value><int>1</int></value>
+</member>
+<member>
+<name>name</name>
+<value><string>sakuradamon</string></value>
+</member>
+<member>
+<name>author</name>
+<value><string>n_ii</string></value>
+</member>
+</struct></value>
+</param>
+</params>
+</methodResponse>`,
+		PageInfo{
+			Name:         "sakuradamon",
+			LastModified: time.Date(1860, time.March, 24, 0, 0, 0, 0, time.UTC),
+			Author:       "n_ii",
+			Version:      1,
+			Comment:      "ouch",
+		},
+	}
+	c := NewTestClient(wiki_get_page_info_version, test.reply)
+	res, err := c.Wiki.GetPageInfoVersion(&test.options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res != test.expected {
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
+	}
 }
 
 func TestPutPage(t *testing.T) {
-	t.FailNow()
+	// test := struct{
+
+	// }
+
+	// c := NewTestClient(wiki_put_page, test.reply)
+	// res, err := c.Wiki.PutPage(&test.options)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	// t.FailNow()
 }
 
 func TestListAttachments(t *testing.T) {
@@ -360,57 +466,4 @@ func TestListLinks(t *testing.T) {
 
 func TestWikiToHtml(t *testing.T) {
 	t.FailNow()
-}
-
-func TestReadGetPageOptions(t *testing.T) {
-	pageName := "testPageName"
-	version := 1
-	tests := []struct {
-		name     string
-		pageName *string
-		version  *int
-		expected []interface{}
-		wantErr  bool
-	}{
-		{
-			"OK(without Version)",
-			&pageName,
-			nil,
-			[]interface{}{pageName},
-			false,
-		},
-		{
-			"OK(with Version)",
-			&pageName,
-			&version,
-			[]interface{}{pageName, version},
-			false,
-		},
-		{
-			"NG(no PageName)",
-			nil,
-			nil,
-			nil,
-			true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			options := &GetPageOptions{
-				PageName: tt.pageName,
-				Version:  tt.version,
-			}
-			res, err := readGetPageOptions(options, "TestReadGetPageOptions")
-			if err != nil {
-				if tt.wantErr {
-					return
-				}
-				t.Fatal(err)
-			}
-			if !reflect.DeepEqual(res, tt.expected) {
-				t.Errorf("unexpected result. expected=%s, got=%s", tt.expected, res)
-			}
-		})
-	}
 }
