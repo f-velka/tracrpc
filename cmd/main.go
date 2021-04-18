@@ -143,7 +143,7 @@ func main() {
 
 	// fmt.Println(res12)
 
-	res13, err := client.Wiki.WikiToHtml(tracrpc.String(res2))
+	res13, err := client.Wiki.WikiToHtml(tracrpc.String("Test"))
 	if err != nil {
 		log.Fatal(err)
 		return

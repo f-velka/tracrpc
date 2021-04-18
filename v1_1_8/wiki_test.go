@@ -1,6 +1,7 @@
 package v1_1_8
 
 import (
+	"encoding/base64"
 	"reflect"
 	"testing"
 	"time"
@@ -41,9 +42,11 @@ func TestNewWikiService(t *testing.T) {
 
 func TestGetRecentChanges(t *testing.T) {
 	test := struct {
+		since    *time.Time
 		reply    string
 		expected []PageInfo
 	}{
+		tracrpc.Time(time.Now()),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -115,8 +118,8 @@ func TestGetRecentChanges(t *testing.T) {
 		},
 	}
 
-	c := NewTestClient(wiki_get_recent_changes, test.reply)
-	res, err := c.Wiki.GetRecentChanges(tracrpc.Time(time.Now()))
+	c := NewTestClient(wiki_get_recent_changes, packArgs(test.since), test.reply)
+	res, err := c.Wiki.GetRecentChanges(test.since)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,22 +144,25 @@ func TestGetRPCVersionSupported(t *testing.T) {
 		2,
 	}
 
-	c := NewTestClient(wiki_get_rpc_version_supported, test.reply)
+	c := NewTestClient(wiki_get_rpc_version_supported, nil, test.reply)
 	res, err := c.Wiki.GetRPCVersionSupported()
 	if err != nil {
 		t.Fatal(err)
 	}
 	if res != test.expected {
-		t.Fatalf("unexpected result. expected=%d, got=%d", test.expected, res)
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
 	}
 }
 
 func TestGetPage(t *testing.T) {
-
 	test := struct {
+		pagename *string
+		version  *int
 		reply    string
 		expected string
 	}{
+		tracrpc.String("shiga"),
+		tracrpc.Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -169,21 +175,25 @@ func TestGetPage(t *testing.T) {
 		"Shiga",
 	}
 
-	c := NewTestClient(wiki_get_page, test.reply)
-	res, err := c.Wiki.GetPage(tracrpc.String("dummy"), tracrpc.Int(1))
+	c := NewTestClient(wiki_get_page, packArgs(test.pagename, test.version), test.reply)
+	res, err := c.Wiki.GetPage(test.pagename, test.version)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if res != test.expected {
-		t.Fatalf("unexpected result. expected=%s, got=%s", test.expected, res)
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
 	}
 }
 
 func TestGetPageVersion(t *testing.T) {
 	test := struct {
+		pagename *string
+		version  *int
 		reply    string
 		expected string
 	}{
+		tracrpc.String("shiga"),
+		tracrpc.Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -196,21 +206,25 @@ func TestGetPageVersion(t *testing.T) {
 		"Shiga",
 	}
 
-	c := NewTestClient(wiki_get_page_version, test.reply)
-	res, err := c.Wiki.GetPageVersion(tracrpc.String("dummy"), tracrpc.Int(1))
+	c := NewTestClient(wiki_get_page_version, packArgs(test.pagename, test.version), test.reply)
+	res, err := c.Wiki.GetPageVersion(test.pagename, test.version)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if res != test.expected {
-		t.Fatalf("unexpected result. expected=%s, got=%s", test.expected, res)
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
 	}
 }
 
 func TestGetPageHtml(t *testing.T) {
 	test := struct {
+		pagename *string
+		version  *int
 		reply    string
 		expected string
 	}{
+		tracrpc.String("shiga"),
+		tracrpc.Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -219,25 +233,28 @@ func TestGetPageHtml(t *testing.T) {
 </param>
 </params>
 </methodResponse>`,
-
 		"this is a test page.",
 	}
 
-	c := NewTestClient(wiki_get_page_html, test.reply)
-	res, err := c.Wiki.GetPageHTML(tracrpc.String("dummy"), tracrpc.Int(1))
+	c := NewTestClient(wiki_get_page_html, packArgs(test.pagename, test.version), test.reply)
+	res, err := c.Wiki.GetPageHTML(test.pagename, test.version)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if res != test.expected {
-		t.Fatalf("unexpected result. expected=%s, got=%s", test.expected, res)
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
 	}
 }
 
 func TestGetPageHtmlVersion(t *testing.T) {
 	test := struct {
+		pagename *string
+		version  *int
 		reply    string
 		expected string
 	}{
+		tracrpc.String("shiga"),
+		tracrpc.Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -246,17 +263,16 @@ func TestGetPageHtmlVersion(t *testing.T) {
 </param>
 </params>
 </methodResponse>`,
-
 		"this is a test page.",
 	}
 
-	c := NewTestClient(wiki_get_page_html_version, test.reply)
-	res, err := c.Wiki.GetPageHTMLVersion(tracrpc.String("dummy"), tracrpc.Int(1))
+	c := NewTestClient(wiki_get_page_html_version, packArgs(test.pagename, test.version), test.reply)
+	res, err := c.Wiki.GetPageHTMLVersion(test.pagename, test.version)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if res != test.expected {
-		t.Fatalf("unexpected result. expected=%s, got=%s", test.expected, res)
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
 	}
 }
 
@@ -279,21 +295,25 @@ func TestGetAllPages(t *testing.T) {
 		[]string{"Biwako", "Kasumigaura"},
 	}
 
-	c := NewTestClient(wiki_get_all_pages, test.reply)
+	c := NewTestClient(wiki_get_all_pages, nil, test.reply)
 	res, err := c.Wiki.GetAllPages()
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(res, test.expected) {
-		t.Fatalf("unexpected result. expected=%s, got=%s", test.expected, res)
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
 	}
 }
 
 func TestGetPageInfo(t *testing.T) {
 	test := struct {
+		pagename *string
+		version  *int
 		reply    string
 		expected PageInfo
 	}{
+		tracrpc.String("shiga"),
+		tracrpc.Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -331,8 +351,9 @@ func TestGetPageInfo(t *testing.T) {
 			Comment:      "ouch",
 		},
 	}
-	c := NewTestClient(wiki_get_page_info, test.reply)
-	res, err := c.Wiki.GetPageInfo(tracrpc.String("dummy"), tracrpc.Int(1))
+
+	c := NewTestClient(wiki_get_page_info, packArgs(test.pagename, test.version), test.reply)
+	res, err := c.Wiki.GetPageInfo(test.pagename, test.version)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -343,9 +364,13 @@ func TestGetPageInfo(t *testing.T) {
 
 func TestGetPageInfoVersion(t *testing.T) {
 	test := struct {
+		pagename *string
+		version  *int
 		reply    string
 		expected PageInfo
 	}{
+		tracrpc.String("shiga"),
+		tracrpc.Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -383,8 +408,9 @@ func TestGetPageInfoVersion(t *testing.T) {
 			Comment:      "ouch",
 		},
 	}
-	c := NewTestClient(wiki_get_page_info_version, test.reply)
-	res, err := c.Wiki.GetPageInfoVersion(tracrpc.String("dummy"), tracrpc.Int(1))
+
+	c := NewTestClient(wiki_get_page_info_version, packArgs(test.pagename, test.version), test.reply)
+	res, err := c.Wiki.GetPageInfoVersion(test.pagename, test.version)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -394,46 +420,261 @@ func TestGetPageInfoVersion(t *testing.T) {
 }
 
 func TestPutPage(t *testing.T) {
-	// test := struct{
+	test := struct {
+		pagename   *string
+		content    *string
+		attributes PutPageAttributes
+		reply      string
+		expected   bool
+	}{
+		tracrpc.String("shiga"),
+		tracrpc.String("content"),
+		PutPageAttributes{
+			Readonly: tracrpc.Bool(true),
+			Author:   tracrpc.String("murasakishikibu"),
+			Comment:  tracrpc.String("comment"),
+		},
+		`<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><boolean>1</boolean></value>
+</param>
+</params>
+</methodResponse>`,
+		true,
+	}
 
-	// }
-
-	// c := NewTestClient(wiki_put_page, test.reply)
-	// res, err := c.Wiki.PutPage(tracrpc.String("dummy"), tracrpc.Int(1))
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-	// t.FailNow()
+	c := NewTestClient(wiki_put_page, packArgs(test.pagename, test.content, &test.attributes), test.reply)
+	res, err := c.Wiki.PutPage(test.pagename, test.content, test.attributes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res != test.expected {
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
+	}
 }
 
 func TestListAttachments(t *testing.T) {
-	t.FailNow()
+	test := struct {
+		pagename *string
+		reply    string
+		expected []string
+	}{
+		tracrpc.String("WikiTest"),
+		`<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><array><data>
+<value><string>WikiTest/Otsu.txt</string></value>
+<value><string>WikiTest/Kyoto.txt</string></value>
+</data></array></value>
+</param>
+</params>
+</methodResponse>`,
+		[]string{"WikiTest/Otsu.txt", "WikiTest/Kyoto.txt"},
+	}
+
+	c := NewTestClient(wiki_list_attachments, packArgs(test.pagename), test.reply)
+	res, err := c.Wiki.ListAttachments(test.pagename)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(res, test.expected) {
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
+	}
 }
 
 func TestGetAttachment(t *testing.T) {
-	t.FailNow()
+	expected, _ := base64.StdEncoding.DecodeString("滋賀")
+	test := struct {
+		path     *string
+		reply    string
+		expected []byte
+	}{
+		tracrpc.String("WikiTest/Otsu.txt"),
+		`<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><base64>5ruL6LOA</base64></value>
+</param>
+</params>
+</methodResponse>`,
+		expected,
+	}
+
+	c := NewTestClient(wiki_get_attachment, packArgs(test.path), test.reply)
+	res, err := c.Wiki.GetAttachment(test.path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reflect.DeepEqual(res, test.expected) {
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
+	}
 }
 
 func TestPutAttachment(t *testing.T) {
-	t.FailNow()
+	test := struct {
+		path     *string
+		data     []byte
+		reply    string
+		expected bool
+	}{
+		tracrpc.String("WikiTest/Shiga.txt"),
+		[]byte{},
+		`<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><boolean>1</boolean></value>
+</param>
+</params>
+</methodResponse>`,
+		true,
+	}
+
+	encData := base64String(test.data)
+	c := NewTestClient(wiki_put_attachment, packArgs(test.path, &encData), test.reply)
+	res, err := c.Wiki.PutAttachment(test.path, test.data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res != test.expected {
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
+	}
 }
 
 func TestPutAttachmentEx(t *testing.T) {
-	t.FailNow()
+	test := struct {
+		pagename    *string
+		filename    *string
+		description *string
+		data        []byte
+		replace     *bool
+		reply       string
+		expected    string
+	}{
+		tracrpc.String("WikiTest"),
+		tracrpc.String("Shiga.txt"),
+		tracrpc.String("test desc"),
+		[]byte{},
+		tracrpc.Bool(true),
+		`<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><string>Shiga.txt</string></value>
+</param>
+</params>
+</methodResponse>`,
+		"Shiga.txt",
+	}
+
+	encData := base64String(test.data)
+	c := NewTestClient(wiki_put_attachment_ex, packArgs(test.pagename, test.filename, test.description, &encData, test.replace), test.reply)
+	res, err := c.Wiki.PutAttachmentEx(test.pagename, test.filename, test.description, test.data, test.replace)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res != test.expected {
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
+	}
 }
 
 func TestDeletePage(t *testing.T) {
-	t.FailNow()
+	test := struct {
+		pagename *string
+		version  *int
+		reply    string
+		expected bool
+	}{
+		tracrpc.String("WikiTest"),
+		tracrpc.Int(1),
+		`<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><boolean>1</boolean></value>
+</param>
+</params>
+</methodResponse>`,
+		true,
+	}
+
+	c := NewTestClient(wiki_delete_page, packArgs(test.pagename, test.version), test.reply)
+	res, err := c.Wiki.DeletePage(test.pagename, test.version)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res != test.expected {
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
+	}
 }
 
 func TestDeleteAttachment(t *testing.T) {
-	t.FailNow()
+	test := struct {
+		path     *string
+		reply    string
+		expected bool
+	}{
+		tracrpc.String("WikiTest/Shiga.txt"),
+		`<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><boolean>1</boolean></value>
+</param>
+</params>
+</methodResponse>`,
+		true,
+	}
+
+	c := NewTestClient(wiki_delete_attachment, packArgs(test.path), test.reply)
+	res, err := c.Wiki.DeleteAttachment(test.path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res != test.expected {
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
+	}
 }
 
 func TestListLinks(t *testing.T) {
-	t.FailNow()
+	// this API is not implemented.
 }
 
 func TestWikiToHtml(t *testing.T) {
-	t.FailNow()
+	test := struct {
+		text     *string
+		reply    string
+		expected string
+	}{
+		tracrpc.String("Test"),
+		`<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><string>&lt;p&gt;
+Test
+&lt;/p&gt;
+</string></value>
+</param>
+</params>
+</methodResponse>`,
+		`<p>
+Test
+</p>
+`,
+	}
+
+	c := NewTestClient(wiki_wiki_to_html, packArgs(test.text), test.reply)
+	res, err := c.Wiki.WikiToHtml(test.text)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res != test.expected {
+		t.Fatalf("unexpected result. expected=%v, got=%v", test.expected, res)
+	}
 }

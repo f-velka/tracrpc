@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 
 	tracrpc "github.com/f-velka/go-trac-rpc"
 )
@@ -19,20 +20,25 @@ func (c *RpcClientMock) Call(methodName string, args interface{}, reply interfac
 type rpcClientWithExpectedMethodName struct {
 	rpcClient          tracrpc.RpcClient
 	expectedMethodName string
+	expectedArgs       interface{}
 }
 
 func (c *rpcClientWithExpectedMethodName) Call(methodName string, args interface{}, reply interface{}) error {
 	if methodName != c.expectedMethodName {
-		return fmt.Errorf("called method name is unexpected. expected=%s, got=%s", c.expectedMethodName, methodName)
+		return fmt.Errorf("unexpected method name. expected=%s, got=%s", c.expectedMethodName, methodName)
+	}
+	if !reflect.DeepEqual(args, c.expectedArgs) {
+		return fmt.Errorf("unexpected args. expected=%v, got=%v", c.expectedArgs, args)
 	}
 
 	return c.rpcClient.Call(methodName, args, reply)
 }
 
-func newRpcClientWithExpectedMethodName(rpcClient tracrpc.RpcClient, expectedMethodName string) tracrpc.RpcClient {
+func newRpcClientWithExpectedValues(rpcClient tracrpc.RpcClient, expectedMethodName string, expectedArgs interface{}) tracrpc.RpcClient {
 	return &rpcClientWithExpectedMethodName{
 		rpcClient:          rpcClient,
 		expectedMethodName: expectedMethodName,
+		expectedArgs:       expectedArgs,
 	}
 }
 
@@ -42,7 +48,7 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req), nil
 }
 
-func NewTestClient(expectedMethodName string, reply string) *Client {
+func NewTestClient(expectedMethodName string, expectedArgs interface{}, reply string) *Client {
 	c, _ := NewClient(
 		"http://example.com",
 		RoundTripFunc(func(_ *http.Request) *http.Response {
@@ -52,6 +58,10 @@ func NewTestClient(expectedMethodName string, reply string) *Client {
 			}
 		}),
 	)
-	c.Wiki.rpc = newRpcClientWithExpectedMethodName(c.Wiki.rpc, expectedMethodName)
+	c.Wiki.rpc = newRpcClientWithExpectedValues(
+		c.Wiki.rpc,
+		expectedMethodName,
+		expectedArgs,
+	)
 	return c
 }

@@ -21,7 +21,7 @@
             "program": "${workspaceRoot}/v1_1_8",
             "env": {},
             "args": ["-test.v"],
-            "showLog": true
+            "showLog": false
         }
     ]
 }

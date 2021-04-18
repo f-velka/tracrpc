@@ -64,8 +64,9 @@ func newWikiService(rpc tracrpc.RpcClient) (*WikiService, error) {
 
 // GetRecentChanges calls wiki.getRecentChanges.
 func (w *WikiService) GetRecentChanges(since *time.Time) ([]PageInfo, error) {
+	args := packArgs(since)
 	reply := []PageInfo{}
-	if err := w.rpc.Call(wiki_get_recent_changes, since, &reply); err != nil {
+	if err := w.rpc.Call(wiki_get_recent_changes, args, &reply); err != nil {
 		return nil, err
 	}
 
@@ -272,6 +273,10 @@ func (w *WikiService) WikiToHtml(text *string) (string, error) {
 func packArgs(args ...interface{}) []interface{} {
 	packed := make([]interface{}, 0, len(args))
 	for _, arg := range args {
+		if reflect.TypeOf(arg).Kind() != reflect.Ptr {
+			panic("args must be pointers.")
+		}
+
 		if !reflect.ValueOf(arg).IsNil() {
 			packed = append(packed, arg)
 		}
