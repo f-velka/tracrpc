@@ -6,16 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/f-velka/go-trac-rpc/common"
+	tracrpc "github.com/f-velka/go-trac-rpc"
 )
-
-func PStr(str string) *string {
-	return &str
-}
-
-func PInt(i int) *int {
-	return &i
-}
 
 type RpcClientMock struct {
 }
@@ -25,7 +17,7 @@ func (c *RpcClientMock) Call(methodName string, args interface{}, reply interfac
 }
 
 type rpcClientWithExpectedMethodName struct {
-	rpcClient          common.RpcClient
+	rpcClient          tracrpc.RpcClient
 	expectedMethodName string
 }
 
@@ -37,7 +29,7 @@ func (c *rpcClientWithExpectedMethodName) Call(methodName string, args interface
 	return c.rpcClient.Call(methodName, args, reply)
 }
 
-func newRpcClientWithExpectedMethodName(rpcClient common.RpcClient, expectedMethodName string) common.RpcClient {
+func newRpcClientWithExpectedMethodName(rpcClient tracrpc.RpcClient, expectedMethodName string) tracrpc.RpcClient {
 	return &rpcClientWithExpectedMethodName{
 		rpcClient:          rpcClient,
 		expectedMethodName: expectedMethodName,

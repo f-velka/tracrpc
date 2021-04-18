@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/f-velka/go-trac-rpc/common"
+	tracrpc "github.com/f-velka/go-trac-rpc"
 )
 
 func TestNewWikiService(t *testing.T) {
 	tests := []struct {
 		name      string
-		rpcClient common.RpcClient
+		rpcClient tracrpc.RpcClient
 		wantErr   bool
 	}{
 		{
@@ -28,7 +28,7 @@ func TestNewWikiService(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewWikiService(tt.rpcClient)
+			_, err := newWikiService(tt.rpcClient)
 			if err != nil {
 				if tt.wantErr {
 					return
@@ -116,7 +116,7 @@ func TestGetRecentChanges(t *testing.T) {
 	}
 
 	c := NewTestClient(wiki_get_recent_changes, test.reply)
-	res, err := c.Wiki.GetRecentChanges(time.Now())
+	res, err := c.Wiki.GetRecentChanges(tracrpc.Time(time.Now()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -154,14 +154,9 @@ func TestGetRPCVersionSupported(t *testing.T) {
 func TestGetPage(t *testing.T) {
 
 	test := struct {
-		options  PageOptions
 		reply    string
 		expected string
 	}{
-		PageOptions{
-			PageName: PStr("Shiga"),
-			Version:  PInt(1),
-		},
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -175,7 +170,7 @@ func TestGetPage(t *testing.T) {
 	}
 
 	c := NewTestClient(wiki_get_page, test.reply)
-	res, err := c.Wiki.GetPage(&test.options)
+	res, err := c.Wiki.GetPage(tracrpc.String("dummy"), tracrpc.Int(1))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -186,14 +181,9 @@ func TestGetPage(t *testing.T) {
 
 func TestGetPageVersion(t *testing.T) {
 	test := struct {
-		options  PageOptions
 		reply    string
 		expected string
 	}{
-		PageOptions{
-			PageName: PStr("Shiga"),
-			Version:  PInt(1),
-		},
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -207,7 +197,7 @@ func TestGetPageVersion(t *testing.T) {
 	}
 
 	c := NewTestClient(wiki_get_page_version, test.reply)
-	res, err := c.Wiki.GetPageVersion(&test.options)
+	res, err := c.Wiki.GetPageVersion(tracrpc.String("dummy"), tracrpc.Int(1))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -218,14 +208,9 @@ func TestGetPageVersion(t *testing.T) {
 
 func TestGetPageHtml(t *testing.T) {
 	test := struct {
-		options  PageOptions
 		reply    string
 		expected string
 	}{
-		PageOptions{
-			PageName: PStr("this is a test page."),
-			Version:  PInt(1),
-		},
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -239,7 +224,7 @@ func TestGetPageHtml(t *testing.T) {
 	}
 
 	c := NewTestClient(wiki_get_page_html, test.reply)
-	res, err := c.Wiki.GetPageHTML(&test.options)
+	res, err := c.Wiki.GetPageHTML(tracrpc.String("dummy"), tracrpc.Int(1))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -250,14 +235,9 @@ func TestGetPageHtml(t *testing.T) {
 
 func TestGetPageHtmlVersion(t *testing.T) {
 	test := struct {
-		options  PageOptions
 		reply    string
 		expected string
 	}{
-		PageOptions{
-			PageName: PStr("this is a test page."),
-			Version:  PInt(1),
-		},
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -271,7 +251,7 @@ func TestGetPageHtmlVersion(t *testing.T) {
 	}
 
 	c := NewTestClient(wiki_get_page_html_version, test.reply)
-	res, err := c.Wiki.GetPageHTMLVersion(&test.options)
+	res, err := c.Wiki.GetPageHTMLVersion(tracrpc.String("dummy"), tracrpc.Int(1))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -311,14 +291,9 @@ func TestGetAllPages(t *testing.T) {
 
 func TestGetPageInfo(t *testing.T) {
 	test := struct {
-		options  PageOptions
 		reply    string
 		expected PageInfo
 	}{
-		PageOptions{
-			PageName: PStr("sakuradamon"),
-			Version:  PInt(1),
-		},
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -357,7 +332,7 @@ func TestGetPageInfo(t *testing.T) {
 		},
 	}
 	c := NewTestClient(wiki_get_page_info, test.reply)
-	res, err := c.Wiki.GetPageInfo(&test.options)
+	res, err := c.Wiki.GetPageInfo(tracrpc.String("dummy"), tracrpc.Int(1))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -368,14 +343,9 @@ func TestGetPageInfo(t *testing.T) {
 
 func TestGetPageInfoVersion(t *testing.T) {
 	test := struct {
-		options  PageOptions
 		reply    string
 		expected PageInfo
 	}{
-		PageOptions{
-			PageName: PStr("sakuradamon"),
-			Version:  PInt(1),
-		},
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -414,7 +384,7 @@ func TestGetPageInfoVersion(t *testing.T) {
 		},
 	}
 	c := NewTestClient(wiki_get_page_info_version, test.reply)
-	res, err := c.Wiki.GetPageInfoVersion(&test.options)
+	res, err := c.Wiki.GetPageInfoVersion(tracrpc.String("dummy"), tracrpc.Int(1))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -429,7 +399,7 @@ func TestPutPage(t *testing.T) {
 	// }
 
 	// c := NewTestClient(wiki_put_page, test.reply)
-	// res, err := c.Wiki.PutPage(&test.options)
+	// res, err := c.Wiki.PutPage(tracrpc.String("dummy"), tracrpc.Int(1))
 	// if err != nil {
 	// 	t.Fatal(err)
 	// }

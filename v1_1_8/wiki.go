@@ -1,10 +1,12 @@
 package v1_1_8
 
 import (
+	"encoding/base64"
 	"errors"
+	"reflect"
 	"time"
 
-	"github.com/f-velka/go-trac-rpc/common"
+	tracrpc "github.com/f-velka/go-trac-rpc"
 )
 
 const (
@@ -19,7 +21,7 @@ const (
 	wiki_get_page_info_version     string = "wiki.getPageInfoVersion"
 	wiki_put_page                  string = "wiki.putPage"
 	wiki_list_attachments          string = "wiki.listAttachments"
-	wiki_get_appachments           string = "wiki.getAttachment"
+	wiki_get_attachment            string = "wiki.getAttachment"
 	wiki_put_attachment            string = "wiki.putAttachment"
 	wiki_put_attachment_ex         string = "wiki.putAttachmentEx"
 	wiki_delete_page               string = "wiki.deletePage"
@@ -28,32 +30,19 @@ const (
 	wiki_wiki_to_html              string = "wiki.wikiToHtml"
 )
 
-// WikiService is wiki API service.
+// WikiService represents wiki API service.
 type WikiService struct {
-	rpc common.RpcClient
+	rpc tracrpc.RpcClient
 }
 
-// PageOptions represents options sent on some WIKI APIs.
-type PageOptions struct {
-	PageName *string
-	Version  *int
-}
-
-// PutPageParams represents params sent on wiki.putPage.
-type PutPageParams struct {
-	PageName   string
-	Content    string
-	Attributes PutPageAttributes
-}
-
-// PutPageAttributes represents attributes in putPageParams.
+// PutPageAttributes represents attributes of wiki.putPage.
 type PutPageAttributes struct {
 	Readonly *bool   `xmlrpc:"readonly"`
 	Author   *string `xmlrpc:"author"`
 	Comment  *string `xmlrpc:"comment"`
 }
 
-// PageInfo represents the info returned by wiki.getRecentChanges, wiki.getPageInfo, wiki.getPageInfoVersion.
+// PageInfo represents the info used by wiki.getRecentChanges, wiki.getPageInfo, wiki.getPageInfoVersion.
 type PageInfo struct {
 	Name         string    `xmlrpc:"name"`
 	LastModified time.Time `xmlrpc:"lastModified"`
@@ -62,8 +51,8 @@ type PageInfo struct {
 	Comment      string    `xmlrpc:"comment"`
 }
 
-// NewWikiService creates new SikiService instance.
-func NewWikiService(rpc common.RpcClient) (*WikiService, error) {
+// newWikiService creates new WikiService instance.
+func newWikiService(rpc tracrpc.RpcClient) (*WikiService, error) {
 	if rpc == nil {
 		return nil, errors.New("rpc client cannot be nil")
 	}
@@ -74,7 +63,7 @@ func NewWikiService(rpc common.RpcClient) (*WikiService, error) {
 }
 
 // GetRecentChanges calls wiki.getRecentChanges.
-func (w *WikiService) GetRecentChanges(since time.Time) ([]PageInfo, error) {
+func (w *WikiService) GetRecentChanges(since *time.Time) ([]PageInfo, error) {
 	reply := []PageInfo{}
 	if err := w.rpc.Call(wiki_get_recent_changes, since, &reply); err != nil {
 		return nil, err
@@ -94,9 +83,8 @@ func (w *WikiService) GetRPCVersionSupported() (int, error) {
 }
 
 // GetPage calls wiki.getPage
-func (w *WikiService) GetPage(options *PageOptions) (string, error) {
-	args := readPageOptions(options)
-
+func (w *WikiService) GetPage(pagename *string, version *int) (string, error) {
+	args := packArgs(pagename, version)
 	var reply string
 	if err := w.rpc.Call(wiki_get_page, args, &reply); err != nil {
 		return "", err
@@ -106,9 +94,8 @@ func (w *WikiService) GetPage(options *PageOptions) (string, error) {
 }
 
 // GetPageVersion calls wiki.getPageVersion.
-func (w *WikiService) GetPageVersion(options *PageOptions) (string, error) {
-	args := readPageOptions(options)
-
+func (w *WikiService) GetPageVersion(pagename *string, version *int) (string, error) {
+	args := packArgs(pagename, version)
 	var reply string
 	if err := w.rpc.Call(wiki_get_page_version, args, &reply); err != nil {
 		return "", err
@@ -118,9 +105,8 @@ func (w *WikiService) GetPageVersion(options *PageOptions) (string, error) {
 }
 
 // GetPageHTML calls wiki.getPageHTML.
-func (w *WikiService) GetPageHTML(options *PageOptions) (string, error) {
-	args := readPageOptions(options)
-
+func (w *WikiService) GetPageHTML(pagename *string, version *int) (string, error) {
+	args := packArgs(pagename, version)
 	var reply string
 	if err := w.rpc.Call(wiki_get_page_html, args, &reply); err != nil {
 		return "", err
@@ -130,9 +116,8 @@ func (w *WikiService) GetPageHTML(options *PageOptions) (string, error) {
 }
 
 // GetPageHTMLVersion calls wiki.getPageHTMLVersion.
-func (w *WikiService) GetPageHTMLVersion(options *PageOptions) (string, error) {
-	args := readPageOptions(options)
-
+func (w *WikiService) GetPageHTMLVersion(pagename *string, version *int) (string, error) {
+	args := packArgs(pagename, version)
 	var reply string
 	if err := w.rpc.Call(wiki_get_page_html_version, args, &reply); err != nil {
 		return "", err
@@ -152,9 +137,8 @@ func (w *WikiService) GetAllPages() ([]string, error) {
 }
 
 // GetPageInfo calls wiki.getPageInfo.
-func (w *WikiService) GetPageInfo(options *PageOptions) (PageInfo, error) {
-	args := readPageOptions(options)
-
+func (w *WikiService) GetPageInfo(pagename *string, version *int) (PageInfo, error) {
+	args := packArgs(pagename, version)
 	var reply PageInfo
 	if err := w.rpc.Call(wiki_get_page_info, args, &reply); err != nil {
 		return PageInfo{}, err
@@ -164,9 +148,8 @@ func (w *WikiService) GetPageInfo(options *PageOptions) (PageInfo, error) {
 }
 
 // GetPageInfoVersion calls wiki.getPageInfoVersion.
-func (w *WikiService) GetPageInfoVersion(options *PageOptions) (PageInfo, error) {
-	args := readPageOptions(options)
-
+func (w *WikiService) GetPageInfoVersion(pagename *string, version *int) (PageInfo, error) {
+	args := packArgs(pagename, version)
 	var reply PageInfo
 	if err := w.rpc.Call(wiki_get_page_info_version, args, &reply); err != nil {
 		return PageInfo{}, err
@@ -175,22 +158,9 @@ func (w *WikiService) GetPageInfoVersion(options *PageOptions) (PageInfo, error)
 	return reply, nil
 }
 
-// PutPage calls wiki.putPage
-func (w *WikiService) PutPage() (bool, error) {
-	r := true
-	o := "user33333"
-	cm := "thi is owsome rice."
-	params := PutPageParams{
-		PageName: "新ページ",
-		Content:  "中身です。/ndddddd",
-		Attributes: PutPageAttributes{
-			Readonly: &r,
-			Author:   &o,
-			Comment:  &cm,
-		},
-	}
-
-	args := []interface{}{params.PageName, params.Content, params.Attributes}
+// PutPage calls wiki.putPage.
+func (w *WikiService) PutPage(pagename *string, content *string, attributes PutPageAttributes) (bool, error) {
+	args := packArgs(pagename, content, &attributes)
 	var reply bool
 	if err := w.rpc.Call(wiki_put_page, args, &reply); err != nil {
 		return false, nil
@@ -199,14 +169,113 @@ func (w *WikiService) PutPage() (bool, error) {
 	return reply, nil
 }
 
-func readPageOptions(options *PageOptions) []interface{} {
-	args := []interface{}{}
-	if options.PageName != nil {
-		args = append(args, *options.PageName)
-	}
-	if options.Version != nil {
-		args = append(args, *options.Version)
+// ListAttachments calls wiki.listAttachments.
+func (w *WikiService) ListAttachments(pagename *string) ([]string, error) {
+	args := packArgs(pagename)
+	var reply []string
+	if err := w.rpc.Call(wiki_list_attachments, args, &reply); err != nil {
+		return nil, err
 	}
 
-	return args
+	return reply, nil
+}
+
+// GetAttachment calls wiki.getAttachment.
+func (w *WikiService) GetAttachment(path *string) ([]byte, error) {
+	args := packArgs(path)
+	var replyBase64 string
+	if err := w.rpc.Call(wiki_get_attachment, args, &replyBase64); err != nil {
+		return nil, err
+	}
+
+	reply, err := base64.StdEncoding.DecodeString(replyBase64)
+	if err != nil {
+		return nil, err
+	}
+
+	return reply, nil
+}
+
+// PutAttachment calls wiki.putAttachment.
+func (w *WikiService) PutAttachment(path *string, data []byte) (bool, error) {
+	encData := base64String(base64.StdEncoding.EncodeToString(data))
+	args := packArgs(path, &encData)
+	var reply bool
+	if err := w.rpc.Call(wiki_put_attachment, args, &reply); err != nil {
+		return false, err
+	}
+
+	return reply, nil
+}
+
+// PutAttachmentEx calls wiki.putAttachmentEx.
+// NOTE: This API returns the filename of the created attachment, not boolean as described in the reference.
+func (w *WikiService) PutAttachmentEx(pagename *string, filename *string, description *string, data []byte, replace *bool) (string, error) {
+	encData := base64String(base64.StdEncoding.EncodeToString(data))
+	args := packArgs(pagename, filename, description, &encData, replace)
+	var reply string
+	if err := w.rpc.Call(wiki_put_attachment_ex, args, &reply); err != nil {
+		return "", err
+	}
+
+	return reply, nil
+}
+
+// DeletePage calls wiki.deletePage.
+func (w *WikiService) DeletePage(pagename *string, version *int) (bool, error) {
+	args := packArgs(pagename, version)
+	var reply bool
+	if err := w.rpc.Call(wiki_delete_page, args, &reply); err != nil {
+		return false, err
+	}
+
+	return reply, nil
+}
+
+// DeletePage calls wiki.deleteAttachment.
+func (w *WikiService) DeleteAttachment(path *string) (bool, error) {
+	args := packArgs(path)
+	var reply bool
+	if err := w.rpc.Call(wiki_delete_attachment, args, &reply); err != nil {
+		return false, err
+	}
+
+	return reply, nil
+}
+
+// ListLinks calls wiki.listLinks.
+// Unfortunately, this API is not implemented yet.
+func (w *WikiService) ListLinks(pagename *string) (bool, error) {
+	return false, errors.New("wiki.listLinks is not implemented")
+	// args := packArgs(pagename)
+	// var reply bool
+	// if err := w.rpc.Call(wiki_list_links, args, &reply); err != nil {
+	// 	return false, err
+	// }
+
+	// return reply, nil
+}
+
+// WikiToHtml calls wiki.wikiToHtml.
+func (w *WikiService) WikiToHtml(text *string) (string, error) {
+	args := packArgs(text)
+	var reply string
+	if err := w.rpc.Call(wiki_wiki_to_html, args, &reply); err != nil {
+		return "", err
+	}
+
+	return reply, nil
+}
+
+// packArgs packs args into []interface{}.
+// Args must be pointers.
+func packArgs(args ...interface{}) []interface{} {
+	packed := make([]interface{}, 0, len(args))
+	for _, arg := range args {
+		if !reflect.ValueOf(arg).IsNil() {
+			packed = append(packed, arg)
+		}
+	}
+
+	return packed
 }
