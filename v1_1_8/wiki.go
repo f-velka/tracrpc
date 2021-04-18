@@ -3,7 +3,6 @@ package v1_1_8
 import (
 	"encoding/base64"
 	"errors"
-	"reflect"
 	"time"
 
 	tracrpc "github.com/f-velka/go-trac-rpc"
@@ -42,7 +41,7 @@ type PutPageAttributes struct {
 	Comment  *string `xmlrpc:"comment"`
 }
 
-// PageInfo represents the info used by wiki.getRecentChanges, wiki.getPageInfo, wiki.getPageInfoVersion.
+// PageInfo represents the info returned by wiki.getRecentChanges, wiki.getPageInfo, wiki.getPageInfoVersion.
 type PageInfo struct {
 	Name         string    `xmlrpc:"name"`
 	LastModified time.Time `xmlrpc:"lastModified"`
@@ -266,21 +265,4 @@ func (w *WikiService) WikiToHtml(text *string) (string, error) {
 	}
 
 	return reply, nil
-}
-
-// packArgs packs args into []interface{}.
-// Args must be pointers.
-func packArgs(args ...interface{}) []interface{} {
-	packed := make([]interface{}, 0, len(args))
-	for _, arg := range args {
-		if reflect.TypeOf(arg).Kind() != reflect.Ptr {
-			panic("args must be pointers.")
-		}
-
-		if !reflect.ValueOf(arg).IsNil() {
-			packed = append(packed, arg)
-		}
-	}
-
-	return packed
 }

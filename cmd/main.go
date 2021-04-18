@@ -22,6 +22,32 @@ func main() {
 		log.Fatal(err)
 		return
 	}
+
+	DoSearchAPIs(client)
+	// DoWikiAPIs(client)
+}
+
+func DoSearchAPIs(client *v1_1_8.Client) {
+	res1, err := client.Search.GetSearchFilters()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	for _, r := range res1 {
+		fmt.Println(r)
+	}
+
+	res2, err := client.Search.PerformSearch(tracrpc.String("テストです"), []string{"wiki"})
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	for _, r := range res2 {
+		fmt.Println(r)
+	}
+}
+
+func DoWikiAPIs(client *v1_1_8.Client) {
 	t := time.Date(2014, time.December, 31, 12, 13, 24, 0, time.UTC)
 	res1, err := client.Wiki.GetRecentChanges(&t)
 	if err != nil {
