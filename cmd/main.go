@@ -8,12 +8,11 @@ import (
 	"time"
 
 	tracrpc "github.com/f-velka/go-trac-rpc"
-	"github.com/f-velka/go-trac-rpc/v1_1_8"
 	"github.com/rkl-/digest"
 )
 
 func main() {
-	client, err := v1_1_8.NewClient(
+	client, err := tracrpc.NewClient(
 		"http://192.168.1.102:8888/trac/SampleProject/login/rpc",
 		// "http://localhost:8888",
 		digest.NewTransport("admin", "admin"),
@@ -28,7 +27,7 @@ func main() {
 	// DoWikiAPIs(client)
 }
 
-func DoSearchAPIs(client *v1_1_8.Client) {
+func DoSearchAPIs(client *tracrpc.Client) {
 	res1, err := client.Search.GetSearchFilters()
 	if err != nil {
 		log.Fatal(err)
@@ -48,7 +47,7 @@ func DoSearchAPIs(client *v1_1_8.Client) {
 	}
 }
 
-func DoSystemAPIs(client *v1_1_8.Client) {
+func DoSystemAPIs(client *tracrpc.Client) {
 	// res1, err := client.System.Multicall()
 	// if err != nil {
 	// 	log.Fatal(err)
@@ -88,7 +87,7 @@ func DoSystemAPIs(client *v1_1_8.Client) {
 	fmt.Println(res5)
 }
 
-func DoWikiAPIs(client *v1_1_8.Client) {
+func DoWikiAPIs(client *tracrpc.Client) {
 	t := time.Date(2014, time.December, 31, 12, 13, 24, 0, time.UTC)
 	res1, err := client.Wiki.GetRecentChanges(&t)
 	if err != nil {
@@ -129,7 +128,7 @@ func DoWikiAPIs(client *v1_1_8.Client) {
 	}
 	fmt.Println(res5)
 
-	res6, err := client.Wiki.PutPage(tracrpc.String("マインページ"), tracrpc.String("中身"), v1_1_8.PutPageAttributes{})
+	res6, err := client.Wiki.PutPage(tracrpc.String("マインページ"), tracrpc.String("中身"), tracrpc.PutPageAttributes{})
 	if err != nil {
 		log.Fatal(err)
 		return

@@ -1,17 +1,15 @@
-package v1_1_8
+package tracrpc
 
 import (
 	"reflect"
 	"testing"
 	"time"
-
-	tracrpc "github.com/f-velka/go-trac-rpc"
 )
 
 func TestNewSearchService(t *testing.T) {
 	tests := []struct {
 		name      string
-		rpcClient tracrpc.RpcClient
+		rpcClient RpcClient
 		wantErr   bool
 	}{
 		{
@@ -90,7 +88,7 @@ func TestPerformSearch(t *testing.T) {
 		reply       string
 		expected    []SearchResult
 	}{
-		tracrpc.String("myself"),
+		String("myself"),
 		[]string{"environment", "others"},
 		`<?xml version='1.0'?>
 <methodResponse>

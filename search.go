@@ -1,12 +1,10 @@
-package v1_1_8
+package tracrpc
 
 import (
 	"errors"
 	"fmt"
 	"reflect"
 	"time"
-
-	tracrpc "github.com/f-velka/go-trac-rpc"
 )
 
 const (
@@ -16,7 +14,7 @@ const (
 
 // SearchService represents search API service.
 type SearchService struct {
-	rpc tracrpc.RpcClient
+	rpc RpcClient
 }
 
 // SearchFilter represents the info returned by search.getSearchFilters.
@@ -35,7 +33,7 @@ type SearchResult struct {
 }
 
 // newSearchService creates new SearchService instance.
-func newSearchService(rpc tracrpc.RpcClient) (*SearchService, error) {
+func newSearchService(rpc RpcClient) (*SearchService, error) {
 	if rpc == nil {
 		return nil, errors.New("rpc client cannot be nil")
 	}

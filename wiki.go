@@ -1,11 +1,9 @@
-package v1_1_8
+package tracrpc
 
 import (
 	"encoding/base64"
 	"errors"
 	"time"
-
-	tracrpc "github.com/f-velka/go-trac-rpc"
 )
 
 const (
@@ -31,7 +29,7 @@ const (
 
 // WikiService represents wiki API service.
 type WikiService struct {
-	rpc tracrpc.RpcClient
+	rpc RpcClient
 }
 
 // PutPageAttributes represents attributes of wiki.putPage.
@@ -51,7 +49,7 @@ type PageInfo struct {
 }
 
 // newWikiService creates new WikiService instance.
-func newWikiService(rpc tracrpc.RpcClient) (*WikiService, error) {
+func newWikiService(rpc RpcClient) (*WikiService, error) {
 	if rpc == nil {
 		return nil, errors.New("rpc client cannot be nil")
 	}

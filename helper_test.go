@@ -1,4 +1,4 @@
-package v1_1_8
+package tracrpc
 
 import (
 	"bytes"
@@ -6,8 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
-
-	tracrpc "github.com/f-velka/go-trac-rpc"
 )
 
 type RpcClientMock struct {
@@ -18,7 +16,7 @@ func (c *RpcClientMock) Call(methodName string, args interface{}, reply interfac
 }
 
 type rpcClientWithExpectedMethodName struct {
-	rpcClient          tracrpc.RpcClient
+	rpcClient          RpcClient
 	expectedMethodName string
 	expectedArgs       interface{}
 }
@@ -34,7 +32,7 @@ func (c *rpcClientWithExpectedMethodName) Call(methodName string, args interface
 	return c.rpcClient.Call(methodName, args, reply)
 }
 
-func newRpcClientWithExpectedValues(rpcClient tracrpc.RpcClient, expectedMethodName string, expectedArgs interface{}) tracrpc.RpcClient {
+func newRpcClientWithExpectedValues(rpcClient RpcClient, expectedMethodName string, expectedArgs interface{}) RpcClient {
 	return &rpcClientWithExpectedMethodName{
 		rpcClient:          rpcClient,
 		expectedMethodName: expectedMethodName,

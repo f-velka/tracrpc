@@ -1,18 +1,16 @@
-package v1_1_8
+package tracrpc
 
 import (
 	"encoding/base64"
 	"reflect"
 	"testing"
 	"time"
-
-	tracrpc "github.com/f-velka/go-trac-rpc"
 )
 
 func TestNewWikiService(t *testing.T) {
 	tests := []struct {
 		name      string
-		rpcClient tracrpc.RpcClient
+		rpcClient RpcClient
 		wantErr   bool
 	}{
 		{
@@ -46,7 +44,7 @@ func TestGetRecentChanges(t *testing.T) {
 		reply    string
 		expected []PageInfo
 	}{
-		tracrpc.Time(time.Now()),
+		Time(time.Now()),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -161,8 +159,8 @@ func TestGetPage(t *testing.T) {
 		reply    string
 		expected string
 	}{
-		tracrpc.String("shiga"),
-		tracrpc.Int(1),
+		String("shiga"),
+		Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -192,8 +190,8 @@ func TestGetPageVersion(t *testing.T) {
 		reply    string
 		expected string
 	}{
-		tracrpc.String("shiga"),
-		tracrpc.Int(1),
+		String("shiga"),
+		Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -223,8 +221,8 @@ func TestGetPageHtml(t *testing.T) {
 		reply    string
 		expected string
 	}{
-		tracrpc.String("shiga"),
-		tracrpc.Int(1),
+		String("shiga"),
+		Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -253,8 +251,8 @@ func TestGetPageHtmlVersion(t *testing.T) {
 		reply    string
 		expected string
 	}{
-		tracrpc.String("shiga"),
-		tracrpc.Int(1),
+		String("shiga"),
+		Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -312,8 +310,8 @@ func TestGetPageInfo(t *testing.T) {
 		reply    string
 		expected PageInfo
 	}{
-		tracrpc.String("shiga"),
-		tracrpc.Int(1),
+		String("shiga"),
+		Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -369,8 +367,8 @@ func TestGetPageInfoVersion(t *testing.T) {
 		reply    string
 		expected PageInfo
 	}{
-		tracrpc.String("shiga"),
-		tracrpc.Int(1),
+		String("shiga"),
+		Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -427,12 +425,12 @@ func TestPutPage(t *testing.T) {
 		reply      string
 		expected   bool
 	}{
-		tracrpc.String("shiga"),
-		tracrpc.String("content"),
+		String("shiga"),
+		String("content"),
 		PutPageAttributes{
-			Readonly: tracrpc.Bool(true),
-			Author:   tracrpc.String("murasakishikibu"),
-			Comment:  tracrpc.String("comment"),
+			Readonly: Bool(true),
+			Author:   String("murasakishikibu"),
+			Comment:  String("comment"),
 		},
 		`<?xml version='1.0'?>
 <methodResponse>
@@ -461,7 +459,7 @@ func TestListAttachments(t *testing.T) {
 		reply    string
 		expected []string
 	}{
-		tracrpc.String("WikiTest"),
+		String("WikiTest"),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -493,7 +491,7 @@ func TestGetAttachment(t *testing.T) {
 		reply    string
 		expected []byte
 	}{
-		tracrpc.String("WikiTest/Otsu.txt"),
+		String("WikiTest/Otsu.txt"),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -522,7 +520,7 @@ func TestPutAttachment(t *testing.T) {
 		reply    string
 		expected bool
 	}{
-		tracrpc.String("WikiTest/Shiga.txt"),
+		String("WikiTest/Shiga.txt"),
 		[]byte{},
 		`<?xml version='1.0'?>
 <methodResponse>
@@ -556,11 +554,11 @@ func TestPutAttachmentEx(t *testing.T) {
 		reply       string
 		expected    string
 	}{
-		tracrpc.String("WikiTest"),
-		tracrpc.String("Shiga.txt"),
-		tracrpc.String("test desc"),
+		String("WikiTest"),
+		String("Shiga.txt"),
+		String("test desc"),
 		[]byte{},
-		tracrpc.Bool(true),
+		Bool(true),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -590,8 +588,8 @@ func TestDeletePage(t *testing.T) {
 		reply    string
 		expected bool
 	}{
-		tracrpc.String("WikiTest"),
-		tracrpc.Int(1),
+		String("WikiTest"),
+		Int(1),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -619,7 +617,7 @@ func TestDeleteAttachment(t *testing.T) {
 		reply    string
 		expected bool
 	}{
-		tracrpc.String("WikiTest/Shiga.txt"),
+		String("WikiTest/Shiga.txt"),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -651,7 +649,7 @@ func TestWikiToHtml(t *testing.T) {
 		reply    string
 		expected string
 	}{
-		tracrpc.String("Test"),
+		String("Test"),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>

@@ -1,4 +1,4 @@
-package v1_1_8
+package tracrpc
 
 import (
 	"net/http"

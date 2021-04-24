@@ -1,9 +1,7 @@
-package v1_1_8
+package tracrpc
 
 import (
 	"errors"
-
-	tracrpc "github.com/f-velka/go-trac-rpc"
 )
 
 const (
@@ -16,11 +14,11 @@ const (
 
 // SystemService represents system API service.
 type SystemService struct {
-	rpc tracrpc.RpcClient
+	rpc RpcClient
 }
 
 // newSystemService creates new SystemService instance.
-func newSystemService(rpc tracrpc.RpcClient) (*SystemService, error) {
+func newSystemService(rpc RpcClient) (*SystemService, error) {
 	if rpc == nil {
 		return nil, errors.New("rpc client cannot be nil")
 	}

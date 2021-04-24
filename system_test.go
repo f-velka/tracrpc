@@ -1,16 +1,14 @@
-package v1_1_8
+package tracrpc
 
 import (
 	"reflect"
 	"testing"
-
-	tracrpc "github.com/f-velka/go-trac-rpc"
 )
 
 func TestNewSystemService(t *testing.T) {
 	tests := []struct {
 		name      string
-		rpcClient tracrpc.RpcClient
+		rpcClient RpcClient
 		wantErr   bool
 	}{
 		{
@@ -57,7 +55,7 @@ func TestListMethods(t *testing.T) {
 		[]string{"system.destroy", "system.messUp"},
 	}
 
-	c := NewTestClient(system_list_methods, packArgs(test.expected), test.reply)
+	c := NewTestClient(system_list_methods, nil, test.reply)
 	res, err := c.System.ListMethods()
 	if err != nil {
 		t.Fatal(err)
@@ -73,7 +71,7 @@ func TestMethodHelp(t *testing.T) {
 		reply      string
 		expected   string
 	}{
-		tracrpc.String("help.help"),
+		String("help.help"),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
@@ -101,7 +99,7 @@ func TestMethodSignature(t *testing.T) {
 		reply      string
 		expected   []string
 	}{
-		tracrpc.String("wiki.getHelp"),
+		String("wiki.getHelp"),
 		`<?xml version='1.0'?>
 <methodResponse>
 <params>
