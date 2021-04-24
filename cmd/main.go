@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	tracrpc "github.com/f-velka/go-trac-rpc"
+	"github.com/f-velka/tracrpc"
 	"github.com/rkl-/digest"
 )
 

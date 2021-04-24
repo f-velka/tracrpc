@@ -1,4 +1,4 @@
-module github.com/f-velka/go-trac-rpc
+module github.com/f-velka/tracrpc
 
 go 1.16
 
