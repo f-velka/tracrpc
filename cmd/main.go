@@ -23,7 +23,8 @@ func main() {
 		return
 	}
 
-	DoSearchAPIs(client)
+	// DoSearchAPIs(client)
+	DoSystemAPIs(client)
 	// DoWikiAPIs(client)
 }
 
@@ -45,6 +46,46 @@ func DoSearchAPIs(client *v1_1_8.Client) {
 	for _, r := range res2 {
 		fmt.Println(r)
 	}
+}
+
+func DoSystemAPIs(client *v1_1_8.Client) {
+	// res1, err := client.System.Multicall()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// 	return
+	// }
+	// for _, r := range res1 {
+	// 	fmt.Println(r)
+	// }
+	res2, err := client.System.ListMethods()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	for _, r := range res2 {
+		fmt.Println(r)
+	}
+
+	res3, err := client.System.MethodHelp(tracrpc.String("system.methodHelp"))
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	fmt.Println(res3)
+
+	res4, err := client.System.MethodSignature(tracrpc.String("system.methodHelp"))
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	fmt.Println(res4)
+
+	res5, err := client.System.GetAPIVersion()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	fmt.Println(res5)
 }
 
 func DoWikiAPIs(client *v1_1_8.Client) {

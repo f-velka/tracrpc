@@ -58,6 +58,16 @@ func NewTestClient(expectedMethodName string, expectedArgs interface{}, reply st
 			}
 		}),
 	)
+	c.Search.rpc = newRpcClientWithExpectedValues(
+		c.Search.rpc,
+		expectedMethodName,
+		expectedArgs,
+	)
+	c.System.rpc = newRpcClientWithExpectedValues(
+		c.System.rpc,
+		expectedMethodName,
+		expectedArgs,
+	)
 	c.Wiki.rpc = newRpcClientWithExpectedValues(
 		c.Wiki.rpc,
 		expectedMethodName,

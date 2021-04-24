@@ -10,6 +10,7 @@ import (
 // Client replresents trac API client.
 type Client struct {
 	Search *SearchService
+	System *SystemService
 	Wiki   *WikiService
 }
 
@@ -26,7 +27,10 @@ func NewClient(url string, transport http.RoundTripper) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	system, err := newSystemService(xmlrpcClient)
+	if err != nil {
+		return nil, err
+	}
 	wiki, err := newWikiService(xmlrpcClient)
 	if err != nil {
 		return nil, err
@@ -34,6 +38,7 @@ func NewClient(url string, transport http.RoundTripper) (*Client, error) {
 
 	return &Client{
 		Search: search,
+		System: system,
 		Wiki:   wiki,
 	}, nil
 }
